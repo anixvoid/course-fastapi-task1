@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Body
 
 app = FastAPI()
 
@@ -17,6 +17,23 @@ def get_hotels(
 
     return [hotel for hotel in hotels if (not hotel_id or hotel["id"] == hotel_id) and (not title or hotel["title"] == title)]
 
+@app.post("/hotels")
+def create_hotel(
+    title: str = Body(embed=True) #embed=True - передача параметра в формате json
+):
+    global hotels
+
+    hotel = {
+        "id": hotels[-1]["id"] + 1,
+        "title": title
+    }
+    hotels.append(hotel)
+
+    return {
+        "status": "OK",
+        "id": hotel["id"]
+    }
+
 @app.delete("/hotels/{hotel_id}")
 def delete_hotel(
     hotel_id: int
@@ -24,7 +41,7 @@ def delete_hotel(
     global hotels
     hotels = list([hotel for hotel in hotels if hotel["id"] != hotel_id])
     return {
-        "status": "ok", 
+        "status": "OK", 
         "count": len(hotels)
     }
 
