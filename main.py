@@ -48,11 +48,11 @@ def delete_hotel(
         "count": len(hotels)
     }
 
-@app.put("/hotels/{hotel_id}")
+@app.put("/hotels/{hotel_id}", summary = "Замена данных об отеле")
 def update_hotel(
     hotel_id: int,
-    title: str,
-    name: str
+    title: str = Body(embed=True),
+    name: str = Body(embed=True),
 ):
     global hotels
     for i, hotel in enumerate(hotels):
@@ -73,8 +73,8 @@ def update_hotel(
         "message": "Hotel not found"
     }
 
-@app.patch("/hotels/{hotel_id}")
-def patch_hotel(
+@app.patch("/hotels/{hotel_id}", summary = "Модификация данных об отеле")
+def modify_hotel(
     hotel_id: int,
     title: str | None = None,
     name: str | None = None
