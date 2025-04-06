@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Query, Body
 from schemas.hotels import HotelSchema, HotelPATCH
+from dependencies import PaginationDep
 
 hotels = [
     {"id": 1, "title": "Сочи",              "name": "sochi"},
@@ -14,17 +15,18 @@ router = APIRouter(prefix = "/hotels", tags = ["Отели"])
 
 @router.get("")
 def get_hotels(
-    hotel_id: int | None = Query(None, description = "Идентификатор"),
-    title: str | None    = Query(None, description = "Название"),
-    name: str | None     = Query(None, description = "Псевдоним"),
-    page: int            = Query(1),
-    per_page: int        = Query(3),
+    pagination: PaginationDep,
+    hotel_id: int | None = Query(default=None, description = "Идентификатор"),
+    title: str | None    = Query(default=None, description = "Название"),
+    name: str | None     = Query(default=None, description = "Псевдоним"),
+    #page: int | None     = Query(default=1, gt=1),
+    #per_page: int | None = Query(default=3, gt=1, lt=100),
 ):
     return [hotel for hotel in hotels if (not hotel_id or hotel["id"] == hotel_id) and (not title or hotel["title"] == title) and (not name or hotel["name"] == name)][(page-1)*(per_page):page*per_page]
 
 @router.post("")
 def create_hotel(hotel: HotelSchema = Body(openapi_examples={
-    "1":{"summary": "Сириус0", "value":{
+    "1":{"summary": "Сириус", "value":{
         "title": "Отель Сириус 5 звезд у моря",
         "name": "sirius"
     }},
