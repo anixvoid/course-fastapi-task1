@@ -1,7 +1,7 @@
 from typing import Annotated
+from pydantic import BaseModel
 
 from fastapi import Depends, Query, Depends
-from pydantic import BaseModel
 
 
 class PaginationParams(BaseModel):

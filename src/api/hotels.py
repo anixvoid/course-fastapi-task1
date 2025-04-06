@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, Body
-from schemas.hotels import HotelSchema, HotelPATCH
-from dependencies import PaginationDep
+from src.schemas.hotels import HotelSchema, HotelPATCH
+from src.api.dependencies import PaginationDep
 
 hotels = [
     {"id": 1, "title": "Сочи",              "name": "sochi"},
@@ -22,7 +22,7 @@ def get_hotels(
     #page: int | None     = Query(default=1, gt=1),
     #per_page: int | None = Query(default=3, gt=1, lt=100),
 ):
-    return [hotel for hotel in hotels if (not hotel_id or hotel["id"] == hotel_id) and (not title or hotel["title"] == title) and (not name or hotel["name"] == name)][(page-1)*(per_page):page*per_page]
+    return [hotel for hotel in hotels if (not hotel_id or hotel["id"] == hotel_id) and (not title or hotel["title"] == title) and (not name or hotel["name"] == name)][(pagination.page-1)*(pagination.per_page):pagination.page*pagination.per_page]
 
 @router.post("")
 def create_hotel(hotel: HotelSchema = Body(openapi_examples={
