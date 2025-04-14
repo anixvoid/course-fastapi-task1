@@ -5,7 +5,7 @@ from sqlalchemy import insert
 from sqlalchemy import select
 from sqlalchemy import func
 
-from src.schemas.hotels import Hotel, HotelPATCH
+from src.schemas.hotels import Hotel, HotelAdd, HotelPatch
 from src.api.dependencies import PaginationDep
 
 from database import async_session_maker, engine, sprint
@@ -42,7 +42,7 @@ async def get_hotels(hotel_id:int):
         
 
 @router.post("")
-async def create_hotel(hotel: Hotel = Body(openapi_examples={
+async def create_hotel(hotel: HotelAdd = Body(openapi_examples={
     "1":{"summary": "Сириус", "value":{
         "title": "Отель Сириус 5 звезд у моря",
         "location": "ул. Моря, д. 2"
@@ -84,7 +84,7 @@ async def delete_hotel(
 )
 async def update_hotel(
     hotel_id: int,
-    hotel: Hotel
+    hotel: HotelAdd
 ):
     async with async_session_maker() as session:
         count = await HotelsRepository(session).edit_by_id(hotel, hotel_id)
@@ -101,7 +101,7 @@ async def update_hotel(
 @router.patch("/{hotel_id}", summary = "Модификация данных об отеле")
 async def modify_hotel(
     hotel_id: int,
-    hotel: HotelPATCH,
+    hotel: HotelPatch,
 ):
     async with async_session_maker() as session:
         count = await HotelsRepository(session).edit_by_id(hotel, hotel_id, True)
