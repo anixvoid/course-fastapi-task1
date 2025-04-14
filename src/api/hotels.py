@@ -3,6 +3,7 @@ from src.schemas.hotels import HotelSchema, HotelPATCH
 from src.api.dependencies import PaginationDep
 from sqlalchemy import insert
 from sqlalchemy import select
+from sqlalchemy import func
 
 from database import async_session_maker, engine, sprint
 from models.hotels import HotelsORM
@@ -17,9 +18,13 @@ async def get_hotels(
 ):
     query = select(HotelsORM)
     if title:
-        query = query.filter(HotelsORM.title.ilike(f"%{title}%"))
+        #query = query.filter(HotelsORM.title.ilike(f"%{title}%"))
+        #query = query.filter(func.lower(HotelsORM.title).contains(title.lower()))
+        query = query.filter(HotelsORM.title.icontains(title))
     if location:
-        query = query.filter(HotelsORM.location.ilike(f"%{location}%"))
+        #query = query.filter(HotelsORM.location.ilike(f"%{location}%"))
+        #query = query.filter(func.lower(HotelsORM.location).contains(location.lower()))
+        query = query.filter(HotelsORM.location.icontains(location))
     query = (
         query
         .limit(pagination.per_page)
@@ -110,4 +115,5 @@ def modify_hotel(
     return {
         "status": "NOK", 
         "message": "Hotel not found"
-    }    
+    }
+    
