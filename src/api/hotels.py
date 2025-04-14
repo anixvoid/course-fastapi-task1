@@ -4,30 +4,18 @@ from src.api.dependencies import PaginationDep
 from sqlalchemy import insert
 from sqlalchemy import select
 
-from database import async_session_maker, engine
+from database import async_session_maker, engine, sprint
 from models.hotels import HotelsORM
 
-# hotels = [
-#     {"id": 1, "title": "Сочи",              "name": "sochi"},
-#     {"id": 2, "title": "Дубай",             "name": "dubai"},
-#     {"id": 3, "title": "Шанхай",            "name": "shanghai"},
-#     {"id": 4, "title": "Геленджик",         "name": "gelendzhik"},
-#     {"id": 5, "title": "Москва",            "name": "moscow"},
-#     {"id": 6, "title": "Казанть",           "name": "kazan"},
-#     {"id": 7, "title": "Санкт-Петербург",   "name": "spb"},
-# ]
 router = APIRouter(prefix = "/hotels", tags = ["Отели"])
 
 @router.get("")
 async def get_hotels(
     pagination: PaginationDep,
-    #hotel_id:   int | None      = Query(default=None, description = "Идентификатор"),
     title:      str | None      = Query(default=None, description = "Название"),
     location:   str | None      = Query(default=None, description = "Местонахождение")
 ):
     query = select(HotelsORM)
-    #if hotel_id:
-    #    query = query.filter_by(id=hotel_id)
     if title:
         query = query.filter(HotelsORM.title.ilike(f"%{title}%"))
     if location:
@@ -38,6 +26,7 @@ async def get_hotels(
         .offset(pagination.per_page * (pagination.page - 1))
     )
 
+    #sprint(query)
     async with async_session_maker() as session:
         result = await session.execute(query)
         return result.scalars().all()
@@ -56,14 +45,12 @@ async def create_hotel(hotel: HotelSchema = Body(openapi_examples={
     })):
     async with async_session_maker() as session:
         stmt_insert = insert(HotelsORM).values(**hotel.model_dump())
-        #print(stmt_insert)
-        #print(stmt_insert.compile(engine, compile_kwargs={"literal_binds": True})) # Формирование RAW SQL запроса 
+
         await session.execute(stmt_insert)
         await session.commit()
 
     return {
         "status" : "OK",
-        #"id"     : hotel["id"]
     }
 
 @router.delete("/{hotel_id}")
@@ -123,5 +110,4 @@ def modify_hotel(
     return {
         "status": "NOK", 
         "message": "Hotel not found"
-    }
-    
+    }    
