@@ -5,7 +5,7 @@ from sqlalchemy import insert
 from sqlalchemy import select
 from sqlalchemy import func
 
-from src.schemas.hotels import HotelSchema, HotelPATCH
+from src.schemas.hotels import Hotel, HotelPATCH
 from src.api.dependencies import PaginationDep
 
 from database import async_session_maker, engine, sprint
@@ -32,8 +32,17 @@ async def get_hotels(
             offset      = offset
         )
 
+@router.get("/{hotel_id}")
+async def get_hotels(hotel_id:int):
+    async with async_session_maker() as session:
+        if res := await HotelsRepository(session).get_one_or_none(id=hotel_id):
+            return res
+        else:
+            raise HTTPException(404, "Запись не найдена")
+        
+
 @router.post("")
-async def create_hotel(hotel: HotelSchema = Body(openapi_examples={
+async def create_hotel(hotel: Hotel = Body(openapi_examples={
     "1":{"summary": "Сириус", "value":{
         "title": "Отель Сириус 5 звезд у моря",
         "location": "ул. Моря, д. 2"
@@ -75,7 +84,7 @@ async def delete_hotel(
 )
 async def update_hotel(
     hotel_id: int,
-    hotel: HotelSchema
+    hotel: Hotel
 ):
     async with async_session_maker() as session:
         count = await HotelsRepository(session).edit_by_id(hotel, hotel_id)
@@ -90,26 +99,18 @@ async def update_hotel(
     }
 
 @router.patch("/{hotel_id}", summary = "Модификация данных об отеле")
-def modify_hotel(
+async def modify_hotel(
     hotel_id: int,
     hotel: HotelPATCH,
 ):
-    global hotels
-    for i, h  in enumerate(hotels):
-        if h["id"] == hotel_id:
-            if hotel.title:
-                h["title"] = hotel.title
+    async with async_session_maker() as session:
+        count = await HotelsRepository(session).edit_by_id(hotel, hotel_id, True)
+        if count == 0: raise HTTPException(404, detail="Запись не найдена")
+        if count >= 2: raise HTTPException(400, detail="Записей больше одной")       
 
-            if hotel.name:
-                h["name"] = hotel.name
-
-            return {
-                "status": "OK", 
-                "count": len(hotels)
-            }
+        await session.commit()
 
     return {
-        "status": "NOK", 
-        "message": "Hotel not found"
+        "status" : "OK",
+        #"count"  : count
     }
-    

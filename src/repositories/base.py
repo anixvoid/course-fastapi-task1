@@ -16,7 +16,7 @@ class BaseRepository:
         return result.scalars().all()
 
     async def get_one_or_none(self, **filter_by):
-        query  = select(self.model).fileter_by(**filter_by)
+        query  = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query) 
         
         return result.scalars().one_or_none()
@@ -28,15 +28,19 @@ class BaseRepository:
         res  = await self.session.execute(stmt)
         return res.scalars().one()   
     
-    async def edit(self, data:BaseModel, **filter_by) -> int: #возврат количества
-        stmt = update(self.model).values(**data.model_dump()).filter_by(**filter_by)
-        #sprint(stmt)
+    async def edit(self, data:BaseModel, exclude_unset: bool = False, **filter_by) -> int: #возврат количества
+        print(data)
+        print(data.model_dump(exclude_unset=exclude_unset))
+        print(exclude_unset)
+        print(filter_by)
+        stmt = update(self.model).values(**data.model_dump(exclude_unset=exclude_unset)).filter_by(**filter_by)
+        sprint(stmt)
 
         res  = await self.session.execute(stmt)
         return res.rowcount
 
-    async def edit_by_id(self, data:BaseModel, id:int) -> int: #возврат количества
-        return await self.edit(data, id=id)
+    async def edit_by_id(self, data:BaseModel, id:int, exclude_unset: bool = False) -> int: #возврат количества
+        return await self.edit(data, exclude_unset, id=id)
 
     async def delete(self, **filter_by) -> int: #возврат количества
         stmt = delete(self.model).filter_by(**filter_by)
