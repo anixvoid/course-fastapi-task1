@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query, Body
+from fastapi.exceptions import HTTPException
 
 from sqlalchemy import insert
 from sqlalchemy import select
@@ -44,7 +45,7 @@ async def create_hotel(hotel: HotelSchema = Body(openapi_examples={
     })):
     
     async with async_session_maker() as session:
-        res = await HotelsRepository(session).add(**hotel.model_dump())
+        res = await HotelsRepository(session).add(hotel)
         await session.commit()
 
     return {
@@ -53,38 +54,39 @@ async def create_hotel(hotel: HotelSchema = Body(openapi_examples={
     }
 
 @router.delete("/{hotel_id}")
-def delete_hotel(
+async def delete_hotel(
     hotel_id: int
 ):
-    global hotels
-    hotels = list([hotel for hotel in hotels if hotel["id"] != hotel_id])
+    async with async_session_maker() as session:
+        count = await HotelsRepository(session).delete_by_id(hotel_id)
+        if count == 0: raise HTTPException(404, detail="Запись не найдена")
+        if count >= 2: raise HTTPException(400, detail="Записей больше одной")       
+
+        await session.commit()      
+
     return {
-        "status" : "OK", 
-        "count"   : len(hotels)
+        "status" : "OK",
+        #"count"  : count
     }
 
-@router.put("/{hotel_id}", summary = "Замена данных об отеле")
-def update_hotel(
+@router.put(
+    "/{hotel_id}", 
+    summary = "Замена данных об отеле"
+)
+async def update_hotel(
     hotel_id: int,
     hotel: HotelSchema
 ):
-    global hotels
-    for i, h in enumerate(hotels):
-        if h["id"] == hotel_id:
-            hotels[i] = {
-                "id":    hotel_id, 
-                "title": hotel.title,
-                "name":  hotel.name
-            }
+    async with async_session_maker() as session:
+        count = await HotelsRepository(session).edit_by_id(hotel, hotel_id)
+        if count == 0: raise HTTPException(404, detail="Запись не найдена")
+        if count >= 2: raise HTTPException(400, detail="Записей больше одной")       
 
-            return {
-                "status": "OK", 
-                "count":  len(hotels)
-            }
+        await session.commit()
 
     return {
-        "status":  "NOK", 
-        "message": "Hotel not found"
+        "status" : "OK",
+        #"count"  : count
     }
 
 @router.patch("/{hotel_id}", summary = "Модификация данных об отеле")
