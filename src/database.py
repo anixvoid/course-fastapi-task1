@@ -1,5 +1,3 @@
-import asyncio
-
 from typing import Union
 
 from sqlalchemy import text

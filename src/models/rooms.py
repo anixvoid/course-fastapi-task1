@@ -1,7 +1,6 @@
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.hotels import HotelsORM
 from src.database import BaseORM
 
 class RoomsORM(BaseORM):
