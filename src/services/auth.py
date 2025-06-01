@@ -34,3 +34,5 @@ class AuthService:
             return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])    
         except jwt.exceptions.DecodeError:
             raise HTTPException(status_code=401, detail="Не верный токен доступа")
+        except jwt.exceptions.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Истек срок действия токена доступа")
