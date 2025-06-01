@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, Request
 from sqlalchemy.exc import IntegrityError
 
+from api.dependencies import UserIdDep
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.database import async_session_maker
 from src.repositories.users import UsersRepository
@@ -43,12 +44,10 @@ async def login_user(
 
         return {"access_token": access_token}
     
-@router.get("/only_auth")
-async def only_auth(
-    request: Request,
+@router.get("/me")
+async def get_me(
+    user_id: UserIdDep
 ):
-    access_token = request.cookies.get("access_token")
-    print(f"DEBUG: client {access_token=}") # TODO remove later, for lesson
-    return access_token
-    
-    
+    async with async_session_maker() as session:
+        user = await UsersRepository(session).get_one_or_none(id=user_id)
+    return user    
