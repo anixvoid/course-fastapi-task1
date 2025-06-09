@@ -26,7 +26,7 @@ class BaseRepository:
 
     async def add(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        #sprint(stmt)
+        sprint(stmt)
 
         res = await self.session.execute(stmt)
         if model := res.scalars().one():     
