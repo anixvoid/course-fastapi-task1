@@ -1,17 +1,10 @@
 from fastapi import APIRouter, Query, Body
 from fastapi.exceptions import HTTPException
 
-from sqlalchemy import insert
-from sqlalchemy import select
-from sqlalchemy import func
-
-from src.schemas.hotels import Hotel, HotelAdd, HotelPatch
-from src.api.dependencies import PaginationDep
-
 from database import async_session_maker, engine, sprint
 
 from src.repositories.rooms import RoomsRepository
-from src.schemas.rooms import Room, RoomAdd, RoomPatch, RoomPut
+from src.schemas.rooms import Room, RoomAdd, RoomPatch, RoomAddRequest,RoomPatchRequest
 
 router = APIRouter(prefix = "/hotels", tags = ["Номера"])
 
@@ -45,7 +38,7 @@ async def get_room(
 
 
 @router.post("{hotel_id}/rooms")
-async def create_room(room: RoomAdd = Body(openapi_examples={
+async def create_room(hotel_id:int, room: RoomAddRequest = Body(openapi_examples={
     "1":{"summary": "Люкс", "value":{
         "hotel_id"      : 1,
         "title"         : "Люкс",
@@ -71,9 +64,11 @@ async def create_room(room: RoomAdd = Body(openapi_examples={
 
     }},
     })):
+
+    _room = RoomAdd(hotel_id=hotel_id, **room.model_dump())
     
     async with async_session_maker() as session:
-        res = await RoomsRepository(session).add(room)
+        res = await RoomsRepository(session).add(_room)
         await session.commit()
 
     return {
@@ -82,12 +77,12 @@ async def create_room(room: RoomAdd = Body(openapi_examples={
     }
 
 @router.delete("/{hotel_id}/rooms/{room_id}")
-async def delete_hotel(
+async def delete_room(
     hotel_id: int,
     room_id: int
 ):
     async with async_session_maker() as session:
-        count = await RoomsRepository(session).delete_by_id(room_id)
+        count = await RoomsRepository(session).delete(id=room_id, hotel_id=hotel_id)
         if count == 0: raise HTTPException(404, detail="Запись не найдена")
         if count >= 2: raise HTTPException(400, detail="Записей больше одной")       
 
@@ -105,10 +100,11 @@ async def delete_hotel(
 async def update_room(
     hotel_id : int,
     room_id  : int,
-    room     : RoomPut
+    room     : RoomAddRequest
 ):
+    _room = RoomAdd(hotel_id=hotel_id, **room.model_dump())
     async with async_session_maker() as session:
-        count = await RoomsRepository(session).edit_by_id(room, room_id)
+        count = await RoomsRepository(session).edit(_room, exclude_unset=True, id=room_id, hotel_id=hotel_id)
         if count == 0: raise HTTPException(404, detail="Запись не найдена")
         if count >= 2: raise HTTPException(400, detail="Записей больше одной")       
 
@@ -119,13 +115,14 @@ async def update_room(
     }
 
 @router.patch("/{hotel_id}/rooms/{room_id}", summary = "Модификация данных о комнате")
-async def modify_room(
+async def edit_room(
     hotel_id: int,
     room_id: int,
-    room: RoomPatch,
+    room: RoomPatchRequest,
 ):
+    _room = RoomPatch(hotel_id=hotel_id, **room.model_dump(exclude_unset=True))
     async with async_session_maker() as session:
-        count = await RoomsRepository(session).edit_by_id(room, room_id, True)
+        count = await RoomsRepository(session).edit(_room, exclude_unset=True, id=room_id, hotel_id=hotel_id)
         if count == 0: raise HTTPException(404, detail="Запись не найдена")
         if count >= 2: raise HTTPException(400, detail="Записей больше одной")       
 

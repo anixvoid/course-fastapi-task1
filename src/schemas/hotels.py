@@ -5,8 +5,8 @@ class HotelAdd(BaseModel):
     location: str
 
 class HotelPatch(BaseModel):
-    title   : str | None    = Field(None)
-    location: str | None    = Field(None)
+    title   : str | None    = None
+    location: str | None    = None
 
 class Hotel(HotelAdd):
     id      : int
