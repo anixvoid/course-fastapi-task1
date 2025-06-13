@@ -26,7 +26,7 @@ class BaseRepository:
 
         return None
 
-    async def get_all(self) -> list[BaseModel]:
+    async def get_all(self, *args, **kwargs) -> list[BaseModel]:
         return await self.get_filtered()
 
     async def add(self, data: BaseModel):
