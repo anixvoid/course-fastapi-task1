@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Query, Body
 from fastapi.exceptions import HTTPException
 
@@ -10,18 +12,30 @@ router = APIRouter(prefix = "/hotels", tags = ["Номера"])
 async def get_rooms(
     db              : DBDep,
     hotel_id        : int,
-    title           : str | None      = Query(default=None, description = "Название"),
-    description     : str | None      = Query(default=None, description = "Описание"),
-    min_price       : int | None      = Query(default=None, description = "Минимальная цена"),
-    max_price       : int | None      = Query(default=None, description = "Максимальная цена"),
+    # title           : str | None        = Query(default=None, description = "Название"),
+    # description     : str | None        = Query(default=None, description = "Описание"),
+    # min_price       : int | None        = Query(default=None, description = "Минимальная цена"),
+    # max_price       : int | None        = Query(default=None, description = "Максимальная цена"),
+    date_from       : date              = Query(example="2025-01-01"),
+    date_to         : date              = Query(example="2025-01-10")
 ):
-    return await db.rooms.get_all(
+    return await db.rooms.get_by_date(
         hotel_id        = hotel_id,            
-        description     = description, 
-        title           = title,
-        min_price       = min_price,
-        max_price       = max_price,
+        # description     = description, 
+        # title           = title,
+        # min_price       = min_price,
+        # max_price       = max_price,
+        date_from       = date_from,
+        date_to         = date_to
     )
+    
+    # return await db.rooms.get(
+    #     hotel_id        = hotel_id,            
+    #     description     = description, 
+    #     title           = title,
+    #     min_price       = min_price,
+    #     max_price       = max_price,
+    # )
 
 @router.get("/{hotel_id}/rooms/{room_id}")
 async def get_room(

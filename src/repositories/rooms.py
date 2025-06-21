@@ -1,8 +1,13 @@
-from sqlalchemy import select
+from datetime import date
 
-from repositories.base import BaseRepository
+from sqlalchemy import select, func
+
+from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsORM
 from src.schemas.rooms import Room
+
+from src.repositories.utils import rooms_ids_for_booking
+
 
 class RoomsRepository(BaseRepository):
     model  = RoomsORM
@@ -25,3 +30,11 @@ class RoomsRepository(BaseRepository):
 
         result = await self.session.execute(query)
         return [self.schema.model_validate(model, from_attributes=True) for model in result.scalars().all()]
+    
+    async def get_by_date(
+        self, 
+        hotel_id    : int,
+        date_from   : date,
+        date_to     : date
+    ):
+        return await self.get(RoomsORM.id.in_(rooms_ids_for_booking(date_from=date_from, date_to=date_to, hotel_id=hotel_id)))
