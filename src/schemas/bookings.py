@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -8,6 +8,7 @@ class BookingAddRequest(BaseModel):
     date_to     : date    
 
 class BookingAdd(BaseModel):
+    create_at   : datetime      = Field(default_factory=datetime.now)
     user_id     : int
     room_id     : int
     date_from   : date
@@ -28,3 +29,4 @@ class BookingPatch(BaseModel):
 
 class Booking(BookingAdd):
     id          : int
+    create_at   : datetime      = Field(default_factory=datetime.now)
