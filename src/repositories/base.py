@@ -10,7 +10,7 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_one_or_none(self, **filter_by):
+    async def get_one_or_none(self, **filter_by)  -> BaseModel | None:
         query  = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query) 
         if model := result.scalars().one_or_none():
@@ -18,16 +18,16 @@ class BaseRepository:
 
         return None
 
-    async def get(self, **filter_by):
+    async def get(self, **filter_by)  -> list[BaseModel]:
         query  = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query) 
-        if model := result.scalars().one_or_none():
-            return self.schema.model_validate(model, from_attributes=True)
+        if models := result.scalars().all():
+            return [self.schema.model_validate(model, from_attributes=True) for model in models]
 
         return None
 
     async def get_all(self, *args, **kwargs) -> list[BaseModel]:
-        return await self.get_filtered()
+        return await self.get()
 
     async def add(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)

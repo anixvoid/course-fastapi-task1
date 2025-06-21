@@ -33,3 +33,11 @@ async def create_booking(
         "status" : "OK",
         "data"   : booking
     }
+
+@router.get("")
+async def get_bookings(db: DBDep):
+    return await db.booking.get_all()
+
+@router.get("/me")
+async def get_booking_me(db: DBDep, user_id: UserIdDep):
+    return await db.booking.get(user_id=user_id)
