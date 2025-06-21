@@ -13,7 +13,7 @@ class RoomsRepository(BaseRepository):
     model  = RoomsORM
     schema = Room
 
-    async def get_by_description_title_price_date(
+    async def get_free_by_description_title_price_date(
         self, 
         hotel_id    : int,        
         date_from   : date,

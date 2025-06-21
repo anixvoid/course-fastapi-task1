@@ -19,7 +19,9 @@ async def get_rooms(
     date_from       : date              = Query(example="2025-01-01"),
     date_to         : date              = Query(example="2025-01-10")
 ):
-    return await db.rooms.get_by_description_title_price_date(
+    """Получение свободных комнат отеля"""
+    
+    return await db.rooms.get_free_by_description_title_price_date(
         hotel_id        = hotel_id,            
         description     = description, 
         title           = title,

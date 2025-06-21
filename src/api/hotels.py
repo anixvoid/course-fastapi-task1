@@ -17,10 +17,12 @@ async def get_hotels(
     date_from   : date          = Query(example="2025-01-01"),
     date_to     : date          = Query(example="2025-01-10")
 ):
+    """Получение свободных отелей"""
+
     limit  = pagination.per_page or 100
     offset = pagination.per_page * (pagination.page - 1)
     
-    return await db.hotels.get_by_title_location_date(
+    return await db.hotels.get_free_by_title_location_date(
         title       = title,
         location    = location,
         date_from   = date_from,

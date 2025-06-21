@@ -31,7 +31,7 @@ class HotelsRepository(BaseRepository):
         result = await self.session.execute(query)
         return [self.schema.model_validate(model, from_attributes=True) for model in result.scalars().all()]
 
-    async def get_by_title_location_date(
+    async def get_free_by_title_location_date(
         self, 
         title       : str,
         location    : str, 
