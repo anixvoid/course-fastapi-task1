@@ -4,7 +4,8 @@ from fastapi import APIRouter, Query, Body
 from fastapi.exceptions import HTTPException
 
 from src.api.dependencies import DBDep
-from src.schemas.rooms import Room, RoomAdd, RoomPatch, RoomAddRequest,RoomPatchRequest
+from src.schemas.rooms import Room, RoomAdd, RoomPatch, RoomAddRequest, RoomPatchRequest
+from src.schemas.facilities import RoomFacilityAdd
 
 router = APIRouter(prefix = "/hotels", tags = ["Номера"])
 
@@ -47,38 +48,40 @@ async def get_room(
 async def create_room(
     db              : DBDep,
     hotel_id        : int, 
-    room            : RoomAddRequest = Body(openapi_examples={
+    room_data       : RoomAddRequest = Body(openapi_examples={
         "1":{"summary": "Люкс", "value":{
-            "title"         : "Люкс",
-            "description"   : "Самый комфортный номер",
-            "price"         : 10000,
-            "quantity"      : 3
-
+            "title"             : "Люкс",
+            "description"       : "Самый комфортный номер",
+            "price"             : 10000,
+            "quantity"          : 3,
+            "facilities_ids"    : [1, 2, 3]
         }},
         "2":{"summary": "Стандартный", "value":{
             "title"         : "Стандартный",
             "description"   : "Однокомнатный одноместный",
             "price"         : 4000,
-            "quantity"      : 12
-
+            "quantity"      : 12,
+            "facilities_ids"    : [2, 3, 4]
         }},
         "3":{"summary": "Двухместный", "value":{
             "title"         : "Двухместный",
             "description"   : "Двухместный с одной кроватью",
             "price"         : 7000,
-            "quantity"      : 5
-
+            "quantity"      : 5,
+            "facilities_ids"    : [3, 4, 5]
         }},
     })):
 
-    _room = RoomAdd(hotel_id=hotel_id, **room.model_dump())
+    _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     
-    res = await db.rooms.add(_room)
+    room = await db.rooms.add(_room_data)
+    rooms_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=facility_id) for facility_id in room_data.facilities_ids]
+    await db.rooms_facilities.add_bulk(rooms_facilities_data)
     await db.commit()
 
     return {
         "status" : "OK",
-        "data"   : res
+        "data"   : room
     }
 
 @router.delete("/{hotel_id}/rooms/{room_id}")
