@@ -46,10 +46,11 @@ class BaseRepository:
             return self.schema.model_validate(model, from_attributes=True)    
 
     async def add_bulk(self, items: list[BaseModel]):
-        stmt = insert(self.model).values([item.model_dump() for item in items])
-        #sprint(stmt)
+        if items:
+            stmt = insert(self.model).values([item.model_dump() for item in items])
+            #sprint(stmt)
 
-        await self.session.execute(stmt)
+            await self.session.execute(stmt)
     
     async def edit(self, data:BaseModel, exclude_unset: bool = False, **filter_by) -> int: #возврат количества
         stmt = update(self.model).values(**data.model_dump(exclude_unset=exclude_unset)).filter_by(**filter_by)
@@ -61,8 +62,8 @@ class BaseRepository:
     async def edit_by_id(self, data:BaseModel, id:int, exclude_unset: bool = False) -> int: #возврат количества
         return await self.edit(data, exclude_unset, id=id)
 
-    async def delete(self, **filter_by) -> int: #возврат количества
-        stmt = delete(self.model).filter_by(**filter_by)
+    async def delete(self, *filter, **filter_by) -> int: #возврат количества
+        stmt = delete(self.model).filter(*filter).filter_by(**filter_by)
         #sprint(stmt)
 
         res  = await self.session.execute(stmt)
@@ -70,3 +71,7 @@ class BaseRepository:
 
     async def delete_by_id(self, id:int) -> int: #возврат количества
         return await self.delete(id=id)
+    
+    async def delete_by_ids(self, ids: list[int]) -> int: #возврат количества
+        if ids:
+            return await self.delete(self.model.id.in_(ids))
