@@ -116,14 +116,7 @@ async def update_room(
     if count == 0: raise HTTPException(404, detail = "Запись не найдена")
     if count >= 2: raise HTTPException(400, detail = "Записей больше одной")     
 
-    rooms_facilities_source     = list([room_facility for room_facility in await db.rooms_facilities.get(room_id=room_id)]) 
-    facilities_source_ids       = list([room_facility.facility_id for room_facility in rooms_facilities_source])
-    rooms_facilities_new_datas  = list([RoomFacilityAdd(room_id=room_id, facility_id=facility_id) for facility_id in room_data.facilities_ids if facility_id not in facilities_source_ids])
-    await db.rooms_facilities.add_bulk(rooms_facilities_new_datas)
-
-    rooms_facilities_delete_ids = list([room_facility.id for room_facility in rooms_facilities_source if room_facility.facility_id not in room_data.facilities_ids])
-    await db.rooms_facilities.delete_by_ids(rooms_facilities_delete_ids)            
-
+    await db.rooms_facilities.set_room_facilities(room_id, room_data.facilities_ids)
     await db.commit()
 
     return {
@@ -144,13 +137,7 @@ async def edit_room(
         if count >= 2: raise HTTPException(400, detail = "Записей больше одной")    
 
     if room_data.facilities_ids is not None:
-        rooms_facilities_source     = list([room_facility for room_facility in await db.rooms_facilities.get(room_id=room_id)]) 
-        facilities_source_ids       = list([room_facility.facility_id for room_facility in rooms_facilities_source])
-        rooms_facilities_new_datas  = list([RoomFacilityAdd(room_id=room_id, facility_id=facility_id) for facility_id in room_data.facilities_ids if facility_id not in facilities_source_ids])
-        await db.rooms_facilities.add_bulk(rooms_facilities_new_datas)
-
-        rooms_facilities_delete_ids = list([room_facility.id for room_facility in rooms_facilities_source if room_facility.facility_id not in room_data.facilities_ids])
-        await db.rooms_facilities.delete_by_ids(rooms_facilities_delete_ids)        
+        await db.rooms_facilities.set_room_facilities(room_id, room_data.facilities_ids)
 
     await db.commit()
 
