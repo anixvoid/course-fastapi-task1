@@ -1,5 +1,6 @@
 from datetime import date
 
+from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.orm  import selectinload, joinedload
 from src.repositories.base import BaseRepository
@@ -12,6 +13,17 @@ from src.repositories.utils import rooms_ids_for_booking
 class RoomsRepository(BaseRepository):
     model  = RoomsORM
     schema = Room
+
+    async def get_one_or_none(self, **filter_by)  -> BaseModel | None:
+        query  = (
+            select(self.model)
+            .options(selectinload(self.model.facilities))
+            .filter_by(**filter_by)
+        )
+        result = await self.session.execute(query) 
+        if model := result.unique().scalars().one_or_none():
+            return RoomWithRels.model_validate(model, from_attributes=True)
+        return None
 
     async def get_free_by_description_title_price_date(
         self, 
@@ -46,3 +58,4 @@ class RoomsRepository(BaseRepository):
         result = await self.session.execute(query)
 
         return [RoomWithRels.model_validate(model, from_attributes=True) for model in result.unique().scalars().all()]
+    
