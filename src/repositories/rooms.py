@@ -14,7 +14,7 @@ class RoomsRepository(BaseRepository):
     model  = RoomsORM
     schema = Room
 
-    async def get_one_or_none(self, **filter_by)  -> BaseModel | None:
+    async def get_one_or_none_with_rels(self, **filter_by)  -> BaseModel | None:
         query  = (
             select(self.model)
             .options(selectinload(self.model.facilities))

@@ -38,7 +38,7 @@ async def get_room(
     hotel_id        : int,
     room_id         : int
 ):
-    if res := await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id):
+    if res := await db.rooms.get_one_or_none_with_rels(hotel_id=hotel_id, id=room_id):
         return res
     else:
         raise HTTPException(404, "Запись не найдена")
