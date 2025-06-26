@@ -1,9 +1,9 @@
 from typing import Any
 
 from pydantic import BaseModel
-
 from sqlalchemy import select, insert, delete, update
-from database import sprint
+
+from src.database import sprint
 
 class BaseRepository:
     model             = None

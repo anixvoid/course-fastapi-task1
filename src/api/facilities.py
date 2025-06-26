@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Query, Body
 from fastapi.exceptions import HTTPException
+
 from src.api.dependencies import DBDep, UserIdDep
-from schemas.facilities import Facility, FacilityAdd, FacilityPatch
+from src.schemas.facilities import Facility, FacilityAdd, FacilityPatch
 
 router = APIRouter(prefix = "/facilities", tags = ["Удобства"])
 

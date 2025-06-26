@@ -1,10 +1,10 @@
 from datetime import date
 
 from sqlalchemy import select, func
-
+from sqlalchemy.orm  import selectinload, joinedload
 from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsORM
-from src.schemas.rooms import Room
+from src.schemas.rooms import Room, RoomWithRels
 
 from src.repositories.utils import rooms_ids_for_booking
 
@@ -37,4 +37,12 @@ class RoomsRepository(BaseRepository):
         if max_price:
             filters.append(RoomsORM.price <= max_price)
 
-        return await self.get(*filters)
+        query = (
+            select(self.model)
+            .options(selectinload(self.model.facilities))
+            .filter(*filters)
+        )
+
+        result = await self.session.execute(query)
+
+        return [RoomWithRels.model_validate(model, from_attributes=True) for model in result.unique().scalars().all()]
