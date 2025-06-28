@@ -2,16 +2,16 @@ from datetime import date
 
 from sqlalchemy import select 
 
+from src.repositories.mappers.mappers import HotelDataMapper
 from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsORM
 from src.models.hotels import HotelsORM
-from src.schemas.hotels import Hotel
 
 from src.repositories.utils import rooms_ids_for_booking
 
 class HotelsRepository(BaseRepository):
     model  = HotelsORM
-    schema = Hotel
+    mapper = HotelDataMapper
 
     async def get_all(self, location:str, title:str, limit:int = 100, offset:int = 0):
         query = select(HotelsORM)
@@ -29,7 +29,7 @@ class HotelsRepository(BaseRepository):
 
         #sprint(query)
         result = await self.session.execute(query)
-        return [self.schema.model_validate(model, from_attributes=True) for model in result.scalars().all()]
+        return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
     async def get_free_by_title_location_date(
         self, 

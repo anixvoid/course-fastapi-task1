@@ -1,18 +1,17 @@
 from datetime import date
 
 from pydantic import BaseModel
-from sqlalchemy import select, func
-from sqlalchemy.orm  import selectinload, joinedload
+from sqlalchemy import select
+from sqlalchemy.orm  import selectinload
+from src.repositories.mappers.mappers import RoomDataMapper, RoomDataWithRelsMapper
 from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsORM
-from src.schemas.rooms import Room, RoomWithRels
 
 from src.repositories.utils import rooms_ids_for_booking
 
-
 class RoomsRepository(BaseRepository):
     model  = RoomsORM
-    schema = Room
+    mapper = RoomDataMapper
 
     async def get_one_or_none_with_rels(self, **filter_by)  -> BaseModel | None:
         query  = (
@@ -22,7 +21,7 @@ class RoomsRepository(BaseRepository):
         )
         result = await self.session.execute(query) 
         if model := result.unique().scalars().one_or_none():
-            return RoomWithRels.model_validate(model, from_attributes=True)
+            return RoomDataWithRelsMapper.map_to_domain_entity(model)
         return None
 
     async def get_free_by_description_title_price_date(
@@ -57,5 +56,4 @@ class RoomsRepository(BaseRepository):
 
         result = await self.session.execute(query)
 
-        return [RoomWithRels.model_validate(model, from_attributes=True) for model in result.unique().scalars().all()]
-    
+        return [RoomDataWithRelsMapper.map_to_domain_entity(model) for model in result.unique().scalars().all()]
