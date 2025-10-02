@@ -23,6 +23,13 @@ class BaseRepository:
 
         return None
 
+    async def get_all(self) -> list[BaseModel]:
+        query = select(self.model)            
+        result = await self.session.execute(query) 
+        if models := result.scalars().all():
+            return [self.mapper.map_to_domain_entity(model) for model in models]
+        
+
     async def get(self, *filter: list[Any], limit: int = None, offset: int = None, **filter_by: dict[Any]) -> list[BaseModel]:
         query  = (
             select(self.model)
