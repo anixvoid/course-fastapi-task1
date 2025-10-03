@@ -2,6 +2,7 @@ from datetime import date
 
 from fastapi import APIRouter, Query, Body
 from fastapi.exceptions import HTTPException
+from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep, PaginationDep
 from src.schemas.hotels import Hotel, HotelAdd, HotelPatch
@@ -32,6 +33,7 @@ async def get_hotels(
     )
 
 @router.get("/{hotel_id}")
+@cache(expire=10)
 async def get_hotel(
     db          : DBDep, 
     hotel_id    : int

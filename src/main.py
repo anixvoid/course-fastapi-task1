@@ -1,6 +1,8 @@
 import sys
 from contextlib import asynccontextmanager
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 import uvicorn
 from fastapi import FastAPI
 
@@ -19,6 +21,7 @@ from src.api.facilities import router as router_facilities
 async def lifespan(app: FastAPI):
     # При старте проекта
     await redis_manager.connect()
+    FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
     yield
     await redis_manager.close()
     # При завершении проекта
