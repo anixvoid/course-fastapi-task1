@@ -1,0 +1,1 @@
+celery --app=src.tasks.celery_app:celery_instance worker -l INFO --pool=solo
