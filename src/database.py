@@ -1,6 +1,6 @@
 from typing import Union
 
-from sqlalchemy import text
+from sqlalchemy import NullPool, text
 from sqlalchemy import Select, Insert, Update, Delete
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -9,8 +9,11 @@ from src.config import settings
 
 #print(settings.DB_URL)
 
-engine = create_async_engine(settings.DB_URL)#, echo=True)
-async_session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)
+engine                          = create_async_engine(settings.DB_URL)#, echo=True)
+engine_null_pool                = create_async_engine(settings.DB_URL, poolclass = NullPool)#, echo=True)
+
+async_session_maker             = async_sessionmaker(bind=engine, expire_on_commit=False)
+async_session_maker_null_pool   = async_sessionmaker(bind=engine_null_pool, expire_on_commit=False)
 
 class BaseORM(DeclarativeBase):
     pass
