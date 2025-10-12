@@ -4,4 +4,4 @@ __pycache__
 .editorconfig
 bin
 build.cmd
-static\images
+static/images

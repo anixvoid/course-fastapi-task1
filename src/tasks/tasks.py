@@ -13,9 +13,8 @@ def test_task():
     sleep(5)
     print("Готово")
 
-@celery_instance.task
 def resize_image(image_path: str):
-    sizes = [1000, 500, 200]
+    sizes = [10000, 500, 200]
     output_folder = "static/images"
     img = Image.open(image_path)
 
@@ -31,6 +30,10 @@ def resize_image(image_path: str):
 
         output_path = os.path.join(output_folder, new_file_name)
         img_resized.save(output_path)
+
+@celery_instance.task
+def resize_image_celery(image_path):
+    resize_image(image_path=image_path)
 
 async def get_bookings_with_today_checkin_helpers():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
