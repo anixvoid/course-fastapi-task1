@@ -12,13 +12,13 @@ async def check_test_mode():
     assert settings.MODE == "TEST"
 
 @pytest.fixture(scope="session", autouse=True)
-async def async_main(check_test_mode):
+async def setup_database(check_test_mode):
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(BaseORM.metadata.drop_all)
         await conn.run_sync(BaseORM.metadata.create_all)
 
 @pytest.fixture(scope="session", autouse=True)
-async def register_user():
+async def register_user(setup_database):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://") as ac:
         response = await ac.post(
             "/auth/register", 
