@@ -1,7 +1,5 @@
 import pytest
 
-from sqlalchemy.ext.asyncio import create_async_engine
-
 from src.config             import settings
 from src.database           import BaseORM, engine_null_pool
 from src.models             import *
