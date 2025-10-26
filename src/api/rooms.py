@@ -44,7 +44,7 @@ async def get_room(
         raise HTTPException(404, "Запись не найдена")
 
 
-@router.post("{hotel_id}/rooms")
+@router.post("/{hotel_id}/rooms")
 async def create_room(
     db              : DBDep,
     hotel_id        : int, 
