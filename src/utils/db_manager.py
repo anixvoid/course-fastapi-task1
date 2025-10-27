@@ -14,7 +14,7 @@ class DBManager:
         self.hotels             = HotelsRepository(self.session)
         self.rooms              = RoomsRepository(self.session)
         self.users              = UsersRepository(self.session)
-        self.booking            = BookingsRepository(self.session)
+        self.bookings           = BookingsRepository(self.session)
         self.facilities         = FacilityRepository(self.session)
         self.rooms_facilities   = RoomsFacilitiesRepository(self.session)       
 

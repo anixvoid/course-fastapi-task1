@@ -16,16 +16,16 @@ class BookingAdd(BaseModel):
     price       : int
 
 class BookingPatchRequest(BaseModel):
-    date_from   : date  | None
-    date_to     : date  | None
-    price       : int   | None
+    date_from   : date  | None  = None
+    date_to     : date  | None  = None
+    price       : int   | None  = None
 
 class BookingPatch(BaseModel):
-    user_id     : int   | None
-    room_id     : int   | None
-    date_from   : date  | None
-    date_to     : date  | None
-    price       : int   | None
+    user_id     : int   | None  = None
+    room_id     : int   | None  = None
+    date_from   : date  | None  = None
+    date_to     : date  | None  = None
+    price       : int   | None  = None
 
 class Booking(BookingAdd):
     id          : int
