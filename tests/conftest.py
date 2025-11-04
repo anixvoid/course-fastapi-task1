@@ -23,7 +23,6 @@ async def check_test_mode():
 
 async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
-        #print("Using get_db_null_pool function instead of get_db")
         yield db
 
 app.dependency_overrides[get_db] = get_db_null_pool
@@ -65,24 +64,3 @@ async def register_user(setup_database, async_client):
             "password"  : "1234"
         }
     )
-
-
-# @pytest.fixture(scope="session", autouse=True)
-# async def load_mock_data(register_user):
-#     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://") as ac:
-
-#         mock_hotels = json.load(open("tests/mock_hotels.json", encoding="utf8"))
-#         for hotel in mock_hotels:
-#             response = await ac.post(
-#                 "/hotels", 
-#                 json = hotel
-#             )            
-#             assert response.status_code == 200
-
-#         mock_rooms  = json.load(open("tests/mock_rooms.json",  encoding="utf8"))
-#         for room in mock_rooms:
-#             response = await ac.post(
-#                 "/hotels/{hotel_id}/rooms".format(hotel_id=room.get("hotel_id")), 
-#                 json = room
-#             )
-#             assert response.status_code == 200
