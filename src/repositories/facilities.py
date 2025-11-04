@@ -39,6 +39,3 @@ class RoomsFacilitiesRepository(BaseRepository):
                 .values([{"room_id": room_id, "facility_id": facility_id} for facility_id in facility_ids_to_insert])
             )
             await self.session.execute(insert_m2m_facilities_stmt)
-
-
-

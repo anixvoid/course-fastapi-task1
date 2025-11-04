@@ -22,7 +22,7 @@ from src.api.images                 import router as router_images
 
 async def send_emails_bookings_today_checkin():
     async for db in get_db():
-        bookings = await db.booking.get_bookings_with_today_checkin()
+        bookings = await db.bookings.get_bookings_with_today_checkin()
         print(f"{bookings=}")
 
 async def run_send_email_regularly():

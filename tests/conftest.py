@@ -3,6 +3,9 @@ import pytest
 import json
 from httpx                  import AsyncClient, ASGITransport
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+
 from src.api.dependencies   import get_db
 from src.config             import settings
 from src.schemas.hotels     import HotelAdd
@@ -15,11 +18,6 @@ from src.utils.db_manager   import DBManager
 from src.database           import async_session_maker_null_pool
 
 from src.main               import app
-
-
-@pytest.fixture(scope="session", autouse=True)
-async def check_test_mode():
-    assert settings.MODE == "TEST"
 
 async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
@@ -49,6 +47,19 @@ async def setup_database(check_test_mode):
         await db.rooms.add_bulk(rooms)
 
         await db.commit()
+
+@pytest.fixture(scope="session", autouse=True)
+async def check_test_mode():
+    assert settings.MODE == "TEST"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_cache():
+    FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache-test")
+    yield
+    # Optional: Clear cache after tests if needed
+    FastAPICache.clear()
+
 
 @pytest.fixture(scope="session", autouse=True)
 async def async_client():
