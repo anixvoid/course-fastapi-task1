@@ -30,7 +30,7 @@ app.dependency_overrides[get_db] = get_db_null_pool
 @pytest.fixture(scope="function")
 async def db() -> DBManager:
     async for db in get_db_null_pool():
-        return db
+        yield db
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
