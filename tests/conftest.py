@@ -3,6 +3,7 @@ import pytest
 import json
 from httpx                  import AsyncClient, ASGITransport
 
+from src.api.dependencies   import get_db
 from src.config             import settings
 from src.schemas.hotels     import HotelAdd
 from src.schemas.rooms      import RoomAdd
@@ -20,10 +21,17 @@ from src.main               import app
 async def check_test_mode():
     assert settings.MODE == "TEST"
 
+async def get_db_null_pool():
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        #print("Using get_db_null_pool function instead of get_db")
+        yield db
+
+app.dependency_overrides[get_db] = get_db_null_pool
+
 @pytest.fixture(scope="function")
 async def db() -> DBManager:
-    async with DBManager(session_factory=async_session_maker_null_pool) as db:
-        yield db
+    async for db in get_db_null_pool():
+        return db
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
@@ -57,6 +65,7 @@ async def register_user(setup_database, async_client):
             "password"  : "1234"
         }
     )
+
 
 # @pytest.fixture(scope="session", autouse=True)
 # async def load_mock_data(register_user):
