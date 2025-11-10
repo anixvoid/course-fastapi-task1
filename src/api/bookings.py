@@ -35,7 +35,7 @@ async def create_booking(
     
     _booking_data = BookingAdd(user_id = user_id, price = room_price, **booking_data.model_dump())
 
-    booking = await db.booking.add(_booking_data)
+    booking = await db.bookings.add(_booking_data)
     await db.commit()
 
     return {
