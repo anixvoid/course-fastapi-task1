@@ -32,7 +32,7 @@ class RoomsRepository(BaseRepository):
         description : str | None    = None, 
         title       : str | None    = None, 
         min_price   : int | None    = None, 
-        max_price   : int | None    = None        
+        max_price   : int | None    = None
     ):
         filters = [RoomsORM.id.in_(rooms_ids_for_booking(date_from=date_from, date_to=date_to, hotel_id=hotel_id))]
 
