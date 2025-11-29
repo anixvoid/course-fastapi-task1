@@ -1,4 +1,5 @@
 from datetime   import date
+from fastapi import HTTPException
 from sqlalchemy import select
 
 from src.repositories.utils import rooms_ids_for_booking
@@ -28,6 +29,6 @@ class BookingsRepository(BaseRepository):
         ))).unique().scalars().all()
 
         if booking.room_id not in free_room_ids:
-            raise Exception("Missing free rooms")
+            raise HTTPException(500, "Missing free rooms")
 
         return await self.add(booking)

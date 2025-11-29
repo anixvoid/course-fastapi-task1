@@ -100,3 +100,4 @@ async def authenticated_async_client(register_user, async_client):
     assert async_client.cookies.get("access_token")
 
     yield async_client
+
