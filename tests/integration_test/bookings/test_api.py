@@ -1,6 +1,9 @@
 import pytest
 
-from tests.conftest import authenticated_async_client, delete_all_bookings
+from src.utils.db_manager import DBManager
+from src.database import async_session_maker_null_pool
+
+from tests.conftest import get_db_null_pool 
 
 @pytest.mark.parametrize("room_id, date_from, date_to, status_code",[
     (1, "2024-08-01", "2024-08-10", 200),
@@ -37,6 +40,13 @@ async def test_add_booking(
         assert isinstance(res, dict)
         assert res.get("status") == "OK"
         assert res.get("data")
+
+
+@pytest.fixture(scope="module")
+async def delete_all_bookings(setup_database):
+    async for db in get_db_null_pool():
+        await db.bookings.delete()
+        await db.commit()
 
 @pytest.mark.parametrize("room_id, date_from, date_to, booking_count", [
     (1, "2023-08-01", "2023-08-10", 1),
