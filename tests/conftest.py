@@ -101,3 +101,10 @@ async def authenticated_async_client(register_user, async_client):
 
     yield async_client
 
+@pytest.fixture(scope="session")
+async def delete_all_bookings(setup_database):
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        row_count = await db.bookings.delete()
+        await db.commit()
+
+    return row_count
