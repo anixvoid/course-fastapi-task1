@@ -47,8 +47,7 @@ class BaseRepository:
         if models := result.scalars().all():
             return [self.mapper.map_to_domain_entity(model) for model in models]
 
-    async def add(self, data: BaseModel):
-        
+    async def add(self, data: BaseModel):        
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         #sprint(stmt)
 
