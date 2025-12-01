@@ -1,14 +1,16 @@
 from datetime import date
 
+from src.schemas.bookings import Booking, BookingAdd
+
 from src.utils.db_manager import DBManager
-from src.schemas.bookings import BookingAdd, BookingPatch
+from src.schemas.bookings import BookingAdd, BookingPatch, BookingPatch
 
 from tests.conftest import db
 
 
 async def test_booking_crud(db: DBManager):
-    user_id = (await db.users.get_all())[0].id
-    room_id = (await db.rooms.get_all())[0].id
+    user_id = (await db.users.get_all())[0].id # type: ignore
+    room_id = (await db.rooms.get_all())[0].id # type: ignore
 
     booking_data = BookingAdd(
         user_id=user_id,
@@ -18,13 +20,13 @@ async def test_booking_crud(db: DBManager):
         price=100,
     )
 
-    new_booking = await db.bookings.add(booking_data)
-    booking = await db.bookings.get_one_or_none(id=new_booking.id)
+    new_booking: Booking    = await db.bookings.add(booking_data)
+    booking: Booking | None = await db.bookings.get_one_or_none(id=new_booking.id)
 
     assert new_booking
-    assert booking.id == new_booking.id
-    assert booking.room_id == new_booking.room_id
-    assert booking.user_id == new_booking.user_id
+    assert booking.id       == new_booking.id
+    assert booking.room_id  == new_booking.room_id
+    assert booking.user_id  == new_booking.user_id
 
     updated_price = 200
     updated_date = date(year=2024, month=8, day=25)
@@ -37,7 +39,7 @@ async def test_booking_crud(db: DBManager):
     )
     assert (await db.bookings.edit(booking_path_data, exclude_unset=True, id=booking.id)) == 1
 
-    updated_booking = await db.bookings.get_one_or_none(id=booking.id)
+    updated_booking: Booking = await db.bookings.get_one_or_none(id=booking.id)
     assert updated_booking
 
     assert updated_booking.price == updated_price

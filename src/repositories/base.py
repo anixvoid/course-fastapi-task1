@@ -1,15 +1,16 @@
-from typing import Any
+from typing import Any, AsyncGenerator, Sequence
 
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
 
+from src.database import BaseORM
 from src.repositories.mappers.base import DataMapper
 
 
 class BaseRepository:
-    model = None
-    schema: BaseModel = None
-    mapper: DataMapper = None
+    model   : type[BaseORM] 
+    schema  : type[BaseModel] 
+    mapper  : type[DataMapper]
 
     def __init__(self, session):
         self.session = session
@@ -22,7 +23,7 @@ class BaseRepository:
 
         return None
 
-    async def get_all(self) -> list[BaseModel]:
+    async def get_all(self) -> list[BaseModel] | None:
         query = select(self.model)
         result = await self.session.execute(query)
         if models := result.scalars().all():
@@ -31,10 +32,10 @@ class BaseRepository:
     async def get(
         self,
         *filter: list[Any],
-        limit: int = None,
-        offset: int = None,
-        **filter_by: dict[Any],
-    ) -> list[BaseModel]:
+        limit: int | None = None,
+        offset: int | None = None,
+        **filter_by: dict[Any, Any],
+    ) -> list[BaseModel] | None:
         query = select(self.model).filter(*filter).filter_by(**filter_by)
 
         if limit is not None:
@@ -55,7 +56,7 @@ class BaseRepository:
         if model := res.scalars().one():
             return self.mapper.map_to_domain_entity(model)
 
-    async def add_bulk(self, items: list[BaseModel]):
+    async def add_bulk(self, items: Sequence[BaseModel]):
         if items:
             stmt = insert(self.model).values([item.model_dump() for item in items])
             # sprint(stmt)

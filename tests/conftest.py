@@ -1,3 +1,4 @@
+from typing import AsyncGenerator
 import pytest
 
 import json
@@ -46,13 +47,13 @@ app.dependency_overrides[get_db] = get_db_null_pool
 
 
 @pytest.fixture(scope="function")
-async def db() -> DBManager:
+async def db() -> AsyncGenerator[DBManager]:
     async for db in get_db_null_pool():
         yield db
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def setup_database(check_test_mode):
+async def setup_database(check_test_mode) -> None:
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(BaseORM.metadata.drop_all)
         await conn.run_sync(BaseORM.metadata.create_all)
@@ -71,7 +72,7 @@ async def setup_database(check_test_mode):
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def check_test_mode():
+async def check_test_mode() -> None:
     assert settings.MODE == "TEST"
 
 
@@ -84,7 +85,7 @@ async def check_test_mode():
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def async_client():
+async def async_client() -> AsyncGenerator[AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://") as client:
         yield client
 

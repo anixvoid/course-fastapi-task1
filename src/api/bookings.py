@@ -13,7 +13,7 @@ async def get_bookings(db: DBDep):
 
 @router.get("/me")
 async def get_booking_me(db: DBDep, user_id: UserIdDep):
-    return await db.bookings.get(user_id=user_id)
+    return await db.bookings.get(user_id=user_id) # type: ignore
 
 
 @router.post("")

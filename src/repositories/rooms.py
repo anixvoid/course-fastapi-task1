@@ -16,7 +16,7 @@ class RoomsRepository(BaseRepository):
 
     async def get_one_or_none_with_rels(self, **filter_by) -> BaseModel | None:
         query = (
-            select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by)
+            select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by) # type: ignore
         )
         result = await self.session.execute(query)
         if model := result.unique().scalars().one_or_none():

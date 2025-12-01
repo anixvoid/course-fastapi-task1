@@ -16,7 +16,7 @@ class PaginationParams(BaseModel):
 PaginationDep = Annotated[PaginationParams, Depends()]
 
 
-def get_user_token(request: Request):
+def get_user_token(request: Request) -> str:
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Не предоставлен токен доступа")
@@ -26,7 +26,7 @@ def get_user_token(request: Request):
 
 def get_user_id(
     token: str = Depends(get_user_token),
-):
+) -> int:
     data = AuthService().decode_token(token)
     user_id = data.get("user_id")
 

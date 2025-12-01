@@ -8,7 +8,7 @@ from src.models.rooms import RoomsORM
 from src.models.hotels import HotelsORM
 
 from src.repositories.utils import rooms_ids_for_booking
-
+from src.schemas.hotels import Hotel
 
 class HotelsRepository(BaseRepository):
     model = HotelsORM
@@ -30,13 +30,13 @@ class HotelsRepository(BaseRepository):
 
     async def get_free_by_title_location_date(
         self,
-        title: str,
-        location: str,
+        title: str | None,
+        location: str | None,
         date_from: date,
         date_to: date,
         limit: int | None = None,
         offset: int | None = None,
-    ):
+    ) -> list[Hotel]:
         query_hotels_id = (
             select(RoomsORM.hotel_id)
             .select_from(RoomsORM)

@@ -1,12 +1,12 @@
 from datetime import date
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, Select
 
 from src.models.bookings import BookingsORM
 from src.models.rooms import RoomsORM
 
 
-def rooms_ids_for_booking(date_from: date, date_to: date, hotel_id: int | None = None):
+def rooms_ids_for_booking(date_from: date, date_to: date, hotel_id: int | None = None) -> Select:
     """
     with rooms_count as (
         select room_id, count(*) as rooms_booked from bookings
@@ -52,7 +52,7 @@ def rooms_ids_for_booking(date_from: date, date_to: date, hotel_id: int | None =
         )
 
         rooms_ids_filtered = rooms_ids_filtered.filter(
-            rooms_left_table.c.room_id.in_(rooms_ids_by_hotel_id)
+            rooms_left_table.c.room_id.in_(rooms_ids_by_hotel_id)  # type: ignore
         )
 
     return rooms_ids_filtered
