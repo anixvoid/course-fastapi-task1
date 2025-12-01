@@ -1,35 +1,39 @@
 import sys
 
 import asyncio
-from contextlib                     import asynccontextmanager
+from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi                        import FastAPI
-from fastapi_cache                  import FastAPICache
-from fastapi_cache.backends.redis   import RedisBackend
+from fastapi import FastAPI
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.init                       import redis_manager
-from src.api.dependencies           import get_db
+from src.init import redis_manager
+from src.api.dependencies import get_db
 
-from src.api.auth                   import router as router_auth
-from src.api.hotels                 import router as router_hotels
-from src.api.rooms                  import router as router_rooms
-from src.api.bookings               import router as router_bookings
-from src.api.facilities             import router as router_facilities
-from src.api.images                 import router as router_images
+from src.api.auth import router as router_auth
+from src.api.hotels import router as router_hotels
+from src.api.rooms import router as router_rooms
+from src.api.bookings import router as router_bookings
+from src.api.facilities import router as router_facilities
+from src.api.images import router as router_images
+
 
 async def send_emails_bookings_today_checkin():
     async for db in get_db():
         bookings = await db.bookings.get_bookings_with_today_checkin()
         print(f"{bookings=}")
 
+
 async def run_send_email_regularly():
     while True:
         await send_emails_bookings_today_checkin()
         await asyncio.sleep(5)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,6 +47,7 @@ async def lifespan(app: FastAPI):
     await redis_manager.close()
     # При завершении проекта
 
+
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(router_auth)
@@ -53,9 +58,4 @@ app.include_router(router_facilities)
 app.include_router(router_images)
 
 if __name__ == "__main__":
-    uvicorn.run(
-        app     = "main:app",
-        host    = "0.0.0.0",
-        port    = 8000,
-        reload  = True
-    )
+    uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)

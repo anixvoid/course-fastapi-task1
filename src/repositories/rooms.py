@@ -2,43 +2,46 @@ from datetime import date
 
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.orm  import selectinload
+from sqlalchemy.orm import selectinload
 from src.repositories.mappers.mappers import RoomDataMapper, RoomDataWithRelsMapper
 from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsORM
 
 from src.repositories.utils import rooms_ids_for_booking
 
+
 class RoomsRepository(BaseRepository):
-    model  = RoomsORM
+    model = RoomsORM
     mapper = RoomDataMapper
 
-    async def get_one_or_none_with_rels(self, **filter_by)  -> BaseModel | None:
-        query  = (
-            select(self.model)
-            .options(selectinload(self.model.facilities))
-            .filter_by(**filter_by)
+    async def get_one_or_none_with_rels(self, **filter_by) -> BaseModel | None:
+        query = (
+            select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by)
         )
-        result = await self.session.execute(query) 
+        result = await self.session.execute(query)
         if model := result.unique().scalars().one_or_none():
             return RoomDataWithRelsMapper.map_to_domain_entity(model)
         return None
 
     async def get_free_by_description_title_price_date(
-        self, 
-        hotel_id    : int,        
-        date_from   : date,
-        date_to     : date,
-        description : str | None    = None, 
-        title       : str | None    = None, 
-        min_price   : int | None    = None, 
-        max_price   : int | None    = None
+        self,
+        hotel_id: int,
+        date_from: date,
+        date_to: date,
+        description: str | None = None,
+        title: str | None = None,
+        min_price: int | None = None,
+        max_price: int | None = None,
     ):
-        filters = [RoomsORM.id.in_(rooms_ids_for_booking(date_from=date_from, date_to=date_to, hotel_id=hotel_id))]
+        filters = [
+            RoomsORM.id.in_(
+                rooms_ids_for_booking(date_from=date_from, date_to=date_to, hotel_id=hotel_id)
+            )
+        ]
 
         if title:
             filters.append(RoomsORM.title.icontains(title))
-            
+
         if description:
             filters.append(RoomsORM.description.icontains(description))
 
@@ -48,12 +51,11 @@ class RoomsRepository(BaseRepository):
         if max_price:
             filters.append(RoomsORM.price <= max_price)
 
-        query = (
-            select(self.model)
-            .options(selectinload(self.model.facilities))
-            .filter(*filters)
-        )
+        query = select(self.model).options(selectinload(self.model.facilities)).filter(*filters)
 
         result = await self.session.execute(query)
 
-        return [RoomDataWithRelsMapper.map_to_domain_entity(model) for model in result.unique().scalars().all()]
+        return [
+            RoomDataWithRelsMapper.map_to_domain_entity(model)
+            for model in result.unique().scalars().all()
+        ]

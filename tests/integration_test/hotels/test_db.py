@@ -1,5 +1,6 @@
-from src.schemas.hotels     import HotelAdd
-from tests.conftest         import db
+from src.schemas.hotels import HotelAdd
+from tests.conftest import db
+
 
 async def test_add_hotel(db):
     hotel_data = HotelAdd(title="Hotel 5 stars", location="Сочи")

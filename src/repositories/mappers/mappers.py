@@ -10,34 +10,42 @@ from src.models.hotels import HotelsORM
 from src.schemas.hotels import Hotel
 from src.repositories.mappers.base import DataMapper
 
+
 class UserDataMapper(DataMapper):
     db_model = UsersORM
-    schema   = User
+    schema = User
+
 
 class UserDataWithHashedPasswordMapper(DataMapper):
     db_model = UsersORM
-    schema   = UserWithHashedPassword
+    schema = UserWithHashedPassword
+
 
 class HotelDataMapper(DataMapper):
     db_model = HotelsORM
-    schema   = Hotel
+    schema = Hotel
+
 
 class RoomDataMapper(DataMapper):
     db_model = RoomsORM
-    schema   = Room
+    schema = Room
+
 
 class RoomDataWithRelsMapper(DataMapper):
     db_model = RoomsORM
-    schema   = RoomWithRels
+    schema = RoomWithRels
+
 
 class FacilityDataMapper(DataMapper):
     db_model = FacilitiesORM
-    schema   = Facility
+    schema = Facility
+
 
 class RoomFacilityDataMapper(DataMapper):
     db_model = RoomsFacilitiesORM
-    schema   = RoomFacility
+    schema = RoomFacility
+
 
 class BookingDataMapper(DataMapper):
     db_model = BookingsORM
-    schema   = Booking
+    schema = Booking
