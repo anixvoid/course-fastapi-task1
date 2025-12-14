@@ -7,6 +7,7 @@ from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsORM
 from src.models.hotels import HotelsORM
 
+from src.exceptions import ValidationException
 from src.repositories.utils import rooms_ids_for_booking
 from src.schemas.hotels import Hotel
 
@@ -37,6 +38,10 @@ class HotelsRepository(BaseRepository):
         limit: int | None = None,
         offset: int | None = None,
     ) -> list[Hotel]:
+        
+        if date_from >= date_to:
+            raise ValidationException
+
         query_hotels_id = (
             select(RoomsORM.hotel_id)
             .select_from(RoomsORM)

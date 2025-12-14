@@ -6,8 +6,10 @@ from fastapi import APIRouter, Query, Body
 from fastapi.exceptions import HTTPException
 from fastapi_cache.decorator import cache
 
+from src.exceptions import ValidationException
 from src.api.dependencies import DBDep, PaginationDep
 from src.schemas.hotels import HotelAdd, HotelPatch
+from src.exceptions import ObjectNotFoundException
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -23,26 +25,30 @@ async def get_hotels(
 ):
     """Получение свободных отелей"""
 
+    page  = pagination.page or 1
     limit = pagination.per_page or 100
-    offset = pagination.per_page * (pagination.page - 1)
+    offset = limit * (page - 1)
 
-    return await db.hotels.get_free_by_title_location_date(
-        title=title,
-        location=location,
-        date_from=date_from,
-        date_to=date_to,
-        limit=limit,
-        offset=offset,
-    )
+    try:
+        return await db.hotels.get_free_by_title_location_date(
+            title=title,
+            location=location,
+            date_from=date_from,
+            date_to=date_to,
+            limit=limit,
+            offset=offset,
+        )
+    except ValidationException as ex:
+        raise HTTPException(422, ex.detail)
 
 
 @router.get("/{hotel_id}")
 @cache(expire=10)
 async def get_hotel(db: DBDep, hotel_id: int):
-    if res := await db.hotels.get_one_or_none(id=hotel_id):
-        return res
-    else:
-        raise HTTPException(404, "Запись не найдена")
+    try:
+        return await db.hotels.get_one(id=hotel_id)
+    except ObjectNotFoundException:
+        raise HTTPException(404, "Отель не найден")
 
 
 @router.post("")

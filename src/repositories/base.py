@@ -2,7 +2,9 @@ from typing import Any, AsyncGenerator, Sequence
 
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
+from src.exceptions import AddObjectException, ObjectNotFoundException
 from src.database import BaseORM
 from src.repositories.mappers.base import DataMapper
 
@@ -18,10 +20,20 @@ class BaseRepository:
     async def get_one_or_none(self, **filter_by) -> BaseModel | None:
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
-        if model := result.scalars().one_or_none():
-            return self.mapper.map_to_domain_entity(model)
+        if (model := result.scalars().one_or_none()) is None:
+            return None
+        
+        return self.mapper.map_to_domain_entity(model)       
 
-        return None
+    async def get_one(self, **filter_by) -> BaseModel:
+        query   = select(self.model).filter_by(**filter_by)
+        result  = await self.session.execute(query)
+        try:
+            model   = result.scalar_one()
+        except NoResultFound:
+            raise ObjectNotFoundException
+        
+        return self.mapper.map_to_domain_entity(model)
 
     async def get_all(self) -> list[BaseModel] | None:
         query = select(self.model)
@@ -52,7 +64,11 @@ class BaseRepository:
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         # sprint(stmt)
 
-        res = await self.session.execute(stmt)
+        try:
+            res = await self.session.execute(stmt)
+        except IntegrityError as ex:
+            raise AddObjectException
+
         if model := res.scalars().one():
             return self.mapper.map_to_domain_entity(model)
 

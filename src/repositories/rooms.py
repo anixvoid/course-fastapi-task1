@@ -3,10 +3,13 @@ from datetime import date
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import NoResultFound
+
+from src.exceptions import  ObjectNotFoundException
 from src.repositories.mappers.mappers import RoomDataMapper, RoomDataWithRelsMapper
 from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsORM
-
+from src.exceptions import ValidationException
 from src.repositories.utils import rooms_ids_for_booking
 
 
@@ -14,14 +17,17 @@ class RoomsRepository(BaseRepository):
     model = RoomsORM
     mapper = RoomDataMapper
 
-    async def get_one_or_none_with_rels(self, **filter_by) -> BaseModel | None:
+    async def get_one_with_rels(self, **filter_by) -> BaseModel | None:
         query = (
             select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by) # type: ignore
         )
         result = await self.session.execute(query)
-        if model := result.unique().scalars().one_or_none():
-            return RoomDataWithRelsMapper.map_to_domain_entity(model)
-        return None
+        try:
+            if model := result.unique().scalars().one():
+                return RoomDataWithRelsMapper.map_to_domain_entity(model)
+        except NoResultFound:
+            raise ObjectNotFoundException
+        
 
     async def get_free_by_description_title_price_date(
         self,
@@ -33,6 +39,9 @@ class RoomsRepository(BaseRepository):
         min_price: int | None = None,
         max_price: int | None = None,
     ):
+        if date_from >= date_to:
+            raise ValidationException
+        
         filters = [
             RoomsORM.id.in_(
                 rooms_ids_for_booking(date_from=date_from, date_to=date_to, hotel_id=hotel_id)
