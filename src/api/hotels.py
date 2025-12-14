@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, Body
 from fastapi.exceptions import HTTPException
 from fastapi_cache.decorator import cache
 
-from src.exceptions import ValidationException
+from src.exceptions import HotelNotFoundHTTPException, ValidationException
 from src.api.dependencies import DBDep, PaginationDep
 from src.schemas.hotels import HotelAdd, HotelPatch
 from src.exceptions import ObjectNotFoundException
@@ -39,7 +39,7 @@ async def get_hotels(
             offset=offset,
         )
     except ValidationException as ex:
-        raise HTTPException(422, ex.detail)
+        raise HTTPException(422, detail=ex.detail) from ex
 
 
 @router.get("/{hotel_id}")
@@ -47,8 +47,8 @@ async def get_hotels(
 async def get_hotel(db: DBDep, hotel_id: int):
     try:
         return await db.hotels.get_one(id=hotel_id)
-    except ObjectNotFoundException:
-        raise HTTPException(404, "Отель не найден")
+    except ObjectNotFoundException as ex:
+        raise HotelNotFoundHTTPException from ex
 
 
 @router.post("")

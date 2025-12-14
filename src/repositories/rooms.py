@@ -40,7 +40,7 @@ class RoomsRepository(BaseRepository):
         max_price: int | None = None,
     ):
         if date_from >= date_to:
-            raise ValidationException
+            raise ValidationException("Дата заеда позже даты выезда")
         
         filters = [
             RoomsORM.id.in_(

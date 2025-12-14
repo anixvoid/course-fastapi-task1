@@ -40,7 +40,7 @@ class HotelsRepository(BaseRepository):
     ) -> list[Hotel]:
         
         if date_from >= date_to:
-            raise ValidationException
+            raise ValidationException("Дата заезда позже даты выезда")
 
         query_hotels_id = (
             select(RoomsORM.hotel_id)

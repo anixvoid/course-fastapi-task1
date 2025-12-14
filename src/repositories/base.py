@@ -4,7 +4,9 @@ from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from src.exceptions import AddObjectException, ObjectNotFoundException
+from asyncpg.exceptions import UniqueViolationError
+
+from src.exceptions import AddObjectException, ObjectAlreadyExistsException, ObjectNotFoundException
 from src.database import BaseORM
 from src.repositories.mappers.base import DataMapper
 
@@ -67,7 +69,10 @@ class BaseRepository:
         try:
             res = await self.session.execute(stmt)
         except IntegrityError as ex:
-            raise AddObjectException
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistsException from ex
+            else:
+                raise ex
 
         if model := res.scalars().one():
             return self.mapper.map_to_domain_entity(model)
