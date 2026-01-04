@@ -1,5 +1,5 @@
 import redis.asyncio as redis
-
+import logging
 
 class RedisManager:
     def __init__(self, host: str, port: int):
@@ -8,7 +8,10 @@ class RedisManager:
         self.redis = None
 
     async def connect(self) -> None:
+        logging.info(f"Подключение к Redis {self.host}:{self.port}", )
         self.redis = await redis.Redis(host=self.host, port=self.port)
+        await self.redis.get("test")
+        logging.info(f"Успешное подключение к Redis {self.host}:{self.port}")
 
     async def set(self, key: str, value: str, expire: int | None = None) -> None:
         if expire:

@@ -6,6 +6,8 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from asyncpg.exceptions import UniqueViolationError
 
+import logging
+
 from src.exceptions import AddObjectException, ObjectAlreadyExistsException, ObjectNotFoundException
 from src.database import BaseORM
 from src.repositories.mappers.base import DataMapper
@@ -69,9 +71,11 @@ class BaseRepository:
         try:
             res = await self.session.execute(stmt)
         except IntegrityError as ex:
+            logging.error(f"Не удалось добавить данные в БД ({data}).Тип ошибки: {type(ex.orig.__cause__)=}")
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             else:
+                logging.error(f"Не удалось добавить данные в БД ({data}).Неизвестная ошибка: {type(ex.orig.__cause__)=}")
                 raise ex
 
         if model := res.scalars().one():

@@ -5,3 +5,4 @@ __pycache__
 bin
 build.cmd
 static/images
+logs

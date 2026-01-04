@@ -9,8 +9,13 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 
 from pathlib import Path
-
 sys.path.append(str(Path(__file__).parent.parent))
+
+from config import settings
+
+import logging
+Path(settings.LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+logging.basicConfig(level=logging.INFO, filename=settings.LOG_FILE, filemode="a", encoding="utf8")
 
 from src.init import redis_manager
 
@@ -21,7 +26,6 @@ from src.api.rooms import router as router_rooms
 from src.api.bookings import router as router_bookings
 from src.api.facilities import router as router_facilities
 from src.api.images import router as router_images
-
 
 async def send_emails_bookings_today_checkin():
     async for db in get_db():
@@ -42,9 +46,11 @@ async def lifespan(app: FastAPI):
 
     await redis_manager.connect()
     FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
+    logging.info("FastaAPI cache initialized")
 
     yield
     await redis_manager.close()
+    logging.info("FastaAPI cache closed")
     # При завершении проекта
 
 
