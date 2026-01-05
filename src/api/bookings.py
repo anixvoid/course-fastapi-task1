@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Body, HTTPException
 
+from src.services.bookings import BookingService
 from src.exceptions import NoRoomsAvailableException, ObjectNotFoundException, RoomNotFoundHTTPException
 from src.schemas.rooms import Room
 from src.api.dependencies import DBDep, UserIdDep
@@ -11,12 +12,12 @@ router = APIRouter(prefix="/bookings", tags=["Бронирования"])
 
 @router.get("")
 async def get_bookings(db: DBDep):
-    return await db.bookings.get()
+    return await BookingService(db).get_bookings()
 
 
 @router.get("/me")
 async def get_booking_me(db: DBDep, user_id: UserIdDep):
-    return await db.bookings.get(user_id=user_id) # type: ignore
+    return await BookingService(db).get_booking(user_id=user_id) # type: ignore
 
 
 @router.post("")
