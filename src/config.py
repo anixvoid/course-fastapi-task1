@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
 
-    LOG_FILE: str = "logs/application.log"
+    LOG_FILE: str
 
     @property
     def REDIS_URL(self):

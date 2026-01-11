@@ -45,7 +45,7 @@ def resize_image_celery(image_path):
 
 async def get_bookings_with_today_checkin_helpers():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
-        bookings = await db.booking.get_bookings_with_today_checkin()
+        bookings = await db.bookings.get_bookings_with_today_checkin()
         logging.debug(f"{bookings=}")
 
 
