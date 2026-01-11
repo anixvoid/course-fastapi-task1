@@ -1,6 +1,6 @@
 docker network create network
 
-docker run --name booking_db -p 6432:5432  -e POSTGRES_USER=postgres  -e POSTGRES_PASSWORD=postgres  -e POSTGRES_DB=booking   --network=network --volume pg-booking-data:/var/lib/postgresql/data      -d postgres:16
+docker run --name booking_db -p 6432:5432  -e POSTGRES_USER=postgres  -e POSTGRES_PASSWORD=postgres!!!  -e POSTGRES_DB=booking   --network=network --volume pg-booking-data:/var/lib/postgresql/data      -d postgres:16
 docker run --name booking_cache -p 7379:6379 --network network -d redis:7.4
 
 docker build -t booking_image .
